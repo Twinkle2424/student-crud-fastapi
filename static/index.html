@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Management System</title>
+  <meta name="description" content="Manage university student records using a FastAPI REST API.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M16 8 5 13l11 5 11-5-11-5Zm-7 7.6v4.2c0 1.6 3.1 3.2 7 3.2s7-1.6 7-3.2v-4.2l-7 3.2-7-3.2Z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/static/css/style.css?v=3">
+</head>
+<body>
+
+<!-- Icon sprite: every icon below is referenced with <use href="#i-..."> -->
+<svg xmlns="http://www.w3.org/2000/svg" hidden>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-docs" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-chev-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15ZM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 10 5-10 5L2 7l10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6"/></symbol>
+</svg>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="app">
+  <!-- ============ Sidebar ============ -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <span class="brand-mark"><svg class="icon"><use href="#i-cap"/></svg></span>
+      <span class="brand-text">Student<br>Management</span>
+    </div>
+
+    <nav class="nav">
+      <p class="nav-label">Menu</p>
+      <a class="nav-item is-active" href="#dashboard" data-nav="dashboard">
+        <svg class="icon"><use href="#i-grid"/></svg><span>Dashboard</span>
+      </a>
+      <a class="nav-item" href="#students" data-nav="students">
+        <svg class="icon"><use href="#i-users"/></svg><span>Students</span>
+      </a>
+      <button class="nav-item" type="button" data-action="add">
+        <svg class="icon"><use href="#i-user-plus"/></svg><span>Add Student</span>
+      </button>
+
+      <p class="nav-label">Developer</p>
+      <a class="nav-item" href="/docs" target="_blank" rel="noopener">
+        <svg class="icon"><use href="#i-docs"/></svg>
+        <span class="nav-item-text">API Documentation<small>Opens Swagger UI</small></span>
+        <svg class="icon icon-sm nav-external"><use href="#i-external"/></svg>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sys-row">
+        <span class="sys-label">API Status</span>
+        <span class="api-status" id="api-status" data-api-status data-state="checking">
+          <span class="status-dot"></span>
+          <span id="api-status-text" data-api-status-text>Checking...</span>
+        </span>
+      </div>
+      <div class="sys-row">
+        <span class="sys-label">Storage</span>
+        <span class="sys-value"><svg class="icon icon-sm"><use href="#i-database"/></svg> In-Memory</span>
+      </div>
+      <p class="sys-note">Data resets when the server restarts.</p>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- ============ Main ============ -->
+  <div class="main-wrap">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" id="menu-toggle" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">
+        <svg class="icon"><use href="#i-menu"/></svg>
+      </button>
+      <div class="topbar-title">
+        <p class="topbar-heading">Dashboard</p>
+        <p class="topbar-sub">Manage university student records</p>
+      </div>
+      <span class="api-pill" data-api-status data-state="checking">
+        <span class="status-dot"></span>
+        <span data-api-status-text>Checking...</span>
+      </span>
+    </header>
+
+    <main class="main" id="main">
+      <section class="page-header" id="dashboard">
+        <div>
+          <h1>Student Management</h1>
+          <p>Manage, view, update and organize university student records.</p>
+        </div>
+        <button class="btn btn-primary" type="button" data-action="add">
+          <svg class="icon"><use href="#i-plus"/></svg> Add Student
+        </button>
+      </section>
+
+      <!-- Statistics -->
+      <section class="stats" aria-label="Statistics">
+        <article class="stat-card">
+          <span class="stat-icon"><svg class="icon"><use href="#i-users"/></svg></span>
+          <p class="stat-label">Total Students</p>
+          <p class="stat-value" id="stat-total"><span class="skeleton skeleton-num"></span></p>
+          <p class="stat-caption">Students currently registered</p>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon"><svg class="icon"><use href="#i-file"/></svg></span>
+          <p class="stat-label">Current Page</p>
+          <p class="stat-value" id="stat-page"><span class="skeleton skeleton-num"></span></p>
+          <p class="stat-caption" id="stat-page-caption">Of the student list</p>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon"><svg class="icon"><use href="#i-layers"/></svg></span>
+          <p class="stat-label">Courses</p>
+          <p class="stat-value" id="stat-courses"><span class="skeleton skeleton-num"></span></p>
+          <p class="stat-caption">Different courses offered</p>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon"><svg class="icon"><use href="#i-calendar"/></svg></span>
+          <p class="stat-label">Semester Range</p>
+          <p class="stat-value" id="stat-semesters"><span class="skeleton skeleton-num"></span></p>
+          <p class="stat-caption">Lowest to highest semester</p>
+        </article>
+      </section>
+
+      <!-- How to use: the CRUD workflow -->
+      <section class="panel guide" aria-labelledby="guide-title">
+        <div class="panel-head">
+          <div>
+            <h2 id="guide-title">How to use</h2>
+            <p class="panel-sub">Every action in this dashboard calls the FastAPI REST API.</p>
+          </div>
+        </div>
+        <ol class="process">
+          <li class="process-step">
+            <span class="step-num">01</span>
+            <div class="step-body">
+              <span class="step-tag tag-create">Create</span>
+              <p class="step-title">Add a new student</p>
+              <code class="step-api"><b>POST</b> /students</code>
+            </div>
+          </li>
+          <li class="process-step">
+            <span class="step-num">02</span>
+            <div class="step-body">
+              <span class="step-tag tag-read">Read</span>
+              <p class="step-title">View student records</p>
+              <code class="step-api"><b>GET</b> /students</code>
+            </div>
+          </li>
+          <li class="process-step">
+            <span class="step-num">03</span>
+            <div class="step-body">
+              <span class="step-tag tag-update">Update</span>
+              <p class="step-title">Edit student information</p>
+              <code class="step-api"><b>PUT</b> /students/{id}</code>
+            </div>
+          </li>
+          <li class="process-step">
+            <span class="step-num">04</span>
+            <div class="step-body">
+              <span class="step-tag tag-delete">Delete</span>
+              <p class="step-title">Remove a student</p>
+              <code class="step-api"><b>DELETE</b> /students/{id}</code>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Student list -->
+      <section class="panel students" id="students" aria-labelledby="students-title">
+        <div class="panel-head">
+          <div>
+            <h2 id="students-title">Students</h2>
+            <p class="panel-sub">Manage all student records</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" type="button" data-action="add">
+            <svg class="icon icon-sm"><use href="#i-plus"/></svg> Add Student
+          </button>
+        </div>
+
+        <form class="toolbar" id="filter-form" role="search">
+          <label class="search-field">
+            <span class="visually-hidden">Search students by name</span>
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input type="search" id="filter-name" placeholder="Search students by name..." autocomplete="off">
+          </label>
+          <label class="select-field">
+            <span class="visually-hidden">Filter by course</span>
+            <select id="filter-course">
+              <option value="">All courses</option>
+            </select>
+          </label>
+          <label class="select-field">
+            <span class="visually-hidden">Filter by semester</span>
+            <select id="filter-semester">
+              <option value="">All semesters</option>
+            </select>
+          </label>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <button class="btn btn-ghost" type="button" id="clear-filters">Clear</button>
+          </div>
+        </form>
+
+        <div class="active-filters" id="active-filters" hidden></div>
+
+        <div class="table-wrap" id="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-id">ID</th>
+                <th scope="col">Student</th>
+                <th scope="col">Email</th>
+                <th scope="col">Course</th>
+                <th scope="col">Semester</th>
+                <th scope="col" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="student-rows"></tbody>
+          </table>
+        </div>
+
+        <div class="state-panel" id="state-panel" hidden></div>
+
+        <footer class="table-footer" id="table-footer" hidden>
+          <p class="showing" id="showing-text"></p>
+          <div class="footer-right">
+            <nav class="pager" id="pager" aria-label="Pagination"></nav>
+            <label class="per-page">
+              Rows
+              <select id="page-size">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+          </div>
+        </footer>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ============ Add / Edit student modal ============ -->
+<dialog class="modal" id="student-modal" aria-labelledby="student-modal-title">
+  <form class="modal-content" id="student-form" novalidate>
+    <header class="modal-header">
+      <div>
+        <h2 id="student-modal-title">Add New Student</h2>
+        <p class="modal-sub" id="student-modal-sub">Fill in the details below to create a student record.</p>
+      </div>
+      <button class="icon-btn" type="button" data-close aria-label="Close">
+        <svg class="icon"><use href="#i-x"/></svg>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <div class="modal-loading" id="student-form-loading" hidden>
+        <span class="spinner spinner-lg"></span> Loading student...
+      </div>
+
+      <div id="student-form-fields">
+        <p class="form-section">Student Information</p>
+        <div class="form-grid">
+          <div class="field field-full">
+            <label for="f-id">Student ID</label>
+            <input id="f-id" type="text" readonly tabindex="-1">
+            <p class="hint" id="f-id-hint">Assigned automatically by the API.</p>
+          </div>
+          <div class="field field-full">
+            <label for="f-name">Full Name <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-name" name="name" type="text" placeholder="e.g. Harsh Vekariya" maxlength="100" autocomplete="off" required>
+            <p class="field-error" id="f-name-error"></p>
+          </div>
+          <div class="field field-full">
+            <label for="f-email">Email <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-email" name="email" type="email" placeholder="e.g. harsh@example.com" autocomplete="off" required>
+            <p class="field-error" id="f-email-error"></p>
+          </div>
+          <div class="field">
+            <label for="f-course">Course <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-course" name="course" type="text" placeholder="e.g. M.Sc. IT" maxlength="100" autocomplete="off" list="course-options" required>
+            <datalist id="course-options"></datalist>
+            <p class="field-error" id="f-course-error"></p>
+          </div>
+          <div class="field">
+            <label for="f-semester">Semester <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-semester" name="semester" type="number" inputmode="numeric" min="1" max="12" step="1" placeholder="e.g. 7" required>
+            <p class="field-error" id="f-semester-error"></p>
+          </div>
+        </div>
+      </div>
+      <div class="form-alert" id="student-form-alert" role="alert" hidden></div>
+    </div>
+
+    <footer class="modal-footer">
+      <button class="btn btn-secondary" type="button" data-close>Cancel</button>
+      <button class="btn btn-primary" type="submit" id="student-submit">Create Student</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- ============ View student modal ============ -->
+<dialog class="modal modal-sm" id="view-modal" aria-labelledby="view-modal-title">
+  <div class="modal-content">
+    <header class="modal-header">
+      <h2 id="view-modal-title">Student Details</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close">
+        <svg class="icon"><use href="#i-x"/></svg>
+      </button>
+    </header>
+    <div class="modal-body" id="view-body"></div>
+    <footer class="modal-footer">
+      <button class="btn btn-secondary" type="button" data-close>Close</button>
+      <button class="btn btn-primary" type="button" id="view-edit">
+        <svg class="icon icon-sm"><use href="#i-pencil"/></svg> Edit Student
+      </button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- ============ Delete confirmation modal ============ -->
+<dialog class="modal modal-sm" id="delete-modal" aria-labelledby="delete-modal-title" aria-describedby="delete-modal-desc">
+  <div class="modal-content">
+    <div class="modal-body confirm-body">
+      <span class="confirm-icon"><svg class="icon"><use href="#i-trash"/></svg></span>
+      <div>
+        <h2 id="delete-modal-title">Delete Student?</h2>
+        <p id="delete-modal-desc">
+          Are you sure you want to delete:
+          <strong id="delete-name"></strong>
+          <span class="muted">This action cannot be undone.</span>
+        </p>
+      </div>
+    </div>
+    <footer class="modal-footer">
+      <button class="btn btn-secondary" type="button" data-close>Cancel</button>
+      <button class="btn btn-danger" type="button" id="delete-confirm">Delete Student</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- ============ Toasts ============ -->
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script src="/static/js/app.js?v=3"></script>
+</body>
+</html>
